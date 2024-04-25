@@ -35,18 +35,31 @@ class ItemStorage:
          title (str) - обязательное поле
          description (str) - обязательное поле
         """
-        # In production environment we will use migration tool
-        # like https://github.com/pressly/goose
-        # YOUR CODE GOES HERE
+        query = """
+        CREATE TABLE IF NOT EXISTS items (
+            item_id SERIAL PRIMARY KEY,
+            user_id INT NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL
+        );
+        """
+        async with self._pool.acquire() as connection:
+            await connection.execute(query)
 
     async def save_items(self, items: list[ItemEntry]) -> None:
         """
         Напишите код для вставки записей в таблицу items одним запросом, цикл
         использовать нельзя.
         """
-        # Don't use str-formatting, query args should be escaped to avoid
-        # sql injections https://habr.com/ru/articles/148151/.
-        # YOUR CODE GOES HERE
+        query = """
+        INSERT INTO items (item_id, user_id, title, description)
+        VALUES ($1, $2, $3, $4);
+        """
+        values = [
+            (item.item_id, item.user_id, item.title, item.description) for item in items
+        ]
+        async with self._pool.acquire() as connection:
+            await connection.executemany(query, values)
 
     async def find_similar_items(
         self, user_id: int, title: str, description: str
@@ -54,4 +67,14 @@ class ItemStorage:
         """
         Напишите код для поиска записей, имеющих указанные user_id, title и description.
         """
-        # YOUR CODE GOES HERE
+        query = """
+        SELECT item_id, user_id, title, description
+        FROM items
+        WHERE user_id = $1 AND title = $2 AND description = $3;
+        """
+        async with self._pool.acquire() as connection:
+            rows = await connection.fetch(query, user_id, title, description)
+        return [
+            ItemEntry(row["item_id"], row["user_id"], row["title"], row["description"])
+            for row in rows
+        ]
