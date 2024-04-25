@@ -52,10 +52,13 @@ class ItemStorage:
         использовать нельзя.
         """
         query = """
-        INSERT INTO items (user_id, title, description)
-        VALUES ($1, $2, $3);
+        INSERT INTO items (item_id, user_id, title, description)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT (item_id) DO NOTHING;
         """
-        values = [(item.user_id, item.title, item.description) for item in items]
+        values = [
+            (item.item_id, item.user_id, item.title, item.description) for item in items
+        ]
         async with self._pool.acquire() as connection:
             await connection.executemany(query, values)
 

@@ -21,7 +21,11 @@ async def do_reliable_request(
                 observer.observe(data)
                 return
 
-            except (httpx.HTTPStatusError, httpx.TimeoutException, httpx.NetworkError) as e:
+            except (
+                httpx.HTTPStatusError,
+                httpx.TimeoutException,
+                httpx.NetworkError,
+            ) as e:
                 print(f"Attempt {attempt + 1} failed: {e}")
                 attempt += 1
                 if attempt == max_retries:
