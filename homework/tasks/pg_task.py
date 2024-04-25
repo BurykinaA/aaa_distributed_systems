@@ -53,8 +53,7 @@ class ItemStorage:
         """
         query = """
         INSERT INTO items (user_id, title, description)
-        VALUES ($1, $2, $3)
-        ON CONFLICT (item_id) DO NOTHING;
+        VALUES ($1, $2, $3);
         """
         values = [(item.user_id, item.title, item.description) for item in items]
         async with self._pool.acquire() as connection:
