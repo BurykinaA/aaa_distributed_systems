@@ -53,8 +53,7 @@ class ItemStorage:
         """
         query = """
         INSERT INTO items (item_id, user_id, title, description)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (item_id) DO NOTHING;
+        VALUES ($1, $2, $3, $4);
         """
         values = [
             (item.item_id, item.user_id, item.title, item.description) for item in items
